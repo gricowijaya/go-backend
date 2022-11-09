@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
-	"sync"          // for asynchronous functions
-    "github.com/gricowijaya/go-backend/REST-API/model"
+	"sync" // for asynchronous functions
+
+	"github.com/gricowijaya/go-backend/REST-API/model"
 )
 
 // for global counter
@@ -50,6 +52,21 @@ func about(w http.ResponseWriter, r *http.Request) {
     fmt.Println("GET /static 200 OK")
 }
 
+// function that return model.User    
+func getUser(w http.ResponseWriter, r *http.Request) { 
+    // create the type model
+    var user []model.User
+    user = []model.User{
+        {
+            Name: "Rico",
+            Email:"gricowijaya@go.com",
+            Password:"very-secret-password",
+        },
+    }
+
+    json.NewEncoder(w).Encode(user)
+}
+
 // create the request handlers or routes 
 func handleRequests() {
     // create the route of home
@@ -60,6 +77,8 @@ func handleRequests() {
     http.Handle("/static", http.FileServer(http.Dir("./static")))
     // router for serving the static/html file
     http.HandleFunc("/about", about)
+    // getting the /model
+    http.HandleFunc("/model", getUser)
 }
 
 // serve function
@@ -69,6 +88,7 @@ func serve() {
     // listen and serve the endpoint
     log.Fatal(http.ListenAndServe(":3000", nil))
 }
+
 
 func main() {
     // call the handleRequest
