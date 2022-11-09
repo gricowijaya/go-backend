@@ -1,3 +1,3 @@
-module github.com/gricoiwjaya/go-backend/model
+module github.com/gricowijaya/go-backend
 
 go 1.19

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"          // for asynchronous functions
+    "github.com/gricowijaya/go-backend/REST-API/model"
 )
 
 // for global counter
