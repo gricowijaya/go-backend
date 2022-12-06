@@ -1,0 +1,14 @@
+Table Users { 
+  id integer PK
+  email varchar(50)
+  username varchar(12)
+  password varchar(20)
+}
+
+Table UserDetails {
+  id integer PK
+  user_id integer [ref: - Users.id]
+  fullname varchar(50)
+  phone varchar(13)
+  gender enum
+}
