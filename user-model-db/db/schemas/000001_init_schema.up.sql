@@ -3,14 +3,14 @@
 -- Generated at: 2022-12-06T08:48:33.842Z
 
 CREATE TABLE "Users" (
-  "id" integer PRIMARY KEY,
+  "id" serial PRIMARY KEY,
   "email" varchar(50),
   "username" varchar(12),
   "password" varchar(20)
 );
 
 CREATE TABLE "UserDetails" (
-  "id" integer PRIMARY KEY,
+  "id" serial PRIMARY KEY,
   "user_id" integer,
   "fullname" varchar(50),
   "phone" varchar(13),

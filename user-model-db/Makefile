@@ -5,7 +5,13 @@ dropdb:
 	docker exec -it docker-user-golang-database-1 dropdb --username=postgres user_golang
 
 migrateup:
-	migrate -path db/migrations -database "postgresql://postgres:password@localhost:5433/user_golang?sslmode=disable" --verbose up
+	migrate -path db/schemas -database "postgresql://postgres:password@localhost:5433/user_golang?sslmode=disable" --verbose up
 
 migratedown:
-	migrate -path db/migrations -database "postgresql://postgres:password@localhost:5433/user_golang?sslmode=disable" --verbose down
+	migrate -path db/schemas -database "postgresql://postgres:password@localhost:5433/user_golang?sslmode=disable" --verbose down
+
+sqlc:
+	docker run --rm -v ${CURDIR}:/src -w /src kjconroy/sqlc generate
+
+test: 
+	go test -v -cover ./...
