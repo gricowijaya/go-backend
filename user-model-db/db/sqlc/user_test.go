@@ -67,7 +67,7 @@ func TestUpdateEmail(t *testing.T) {
   }
 }
 
-func TestDeleteUserTestDeleteUser(t *testing.T) {
+func TestDeleteUser(t *testing.T) {
   createUser := createRandomUser(t)
 
   err := testQueries.DeleteUser(context.Background(), createUser.ID)
