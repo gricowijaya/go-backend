@@ -31,9 +31,3 @@ func RandomString(n int) string {
 func RandomOwner() string {
     return RandomString(6)
 }
-
-// func RandomHost() string {
-//     const host = [3]string{"gmail.com", "yahoo.com", "hotmail.com"}
-// }
-
-

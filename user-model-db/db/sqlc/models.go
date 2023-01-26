@@ -5,20 +5,28 @@
 package db
 
 import (
-	"database/sql"
+	"time"
 )
 
-type User struct {
-	ID       int32          `json:"id"`
-	Email    sql.NullString `json:"email"`
-	Username sql.NullString `json:"username"`
-	Password sql.NullString `json:"password"`
+type Accounts struct {
+	ID        int64     `json:"id"`
+	Owner     string    `json:"owner"`
+	Balance   int64     `json:"balance"`
+	Currency  string    `json:"currency"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
-type UserDetail struct {
-	ID       int32          `json:"id"`
-	UserID   sql.NullInt32  `json:"user_id"`
-	Fullname sql.NullString `json:"fullname"`
-	Phone    sql.NullString `json:"phone"`
-	Gender   sql.NullString `json:"gender"`
+type Entries struct {
+	ID        int64     `json:"id"`
+	AccountID int64     `json:"account_id"`
+	Amount    int64     `json:"amount"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type Transfers struct {
+	ID            int64     `json:"id"`
+	FromAccountID int64     `json:"from_account_id"`
+	ToAccountID   int64     `json:"to_account_id"`
+	Amount        int64     `json:"amount"`
+	CreatedAt     time.Time `json:"created_at"`
 }

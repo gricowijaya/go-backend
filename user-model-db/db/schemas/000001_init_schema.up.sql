@@ -1,20 +1,39 @@
--- SQL dump generated using DBML (dbml-lang.org)
--- Database: PostgreSQL
--- Generated at: 2022-12-06T08:48:33.842Z
-
-CREATE TABLE "Users" (
-  "id" serial PRIMARY KEY,
-  "email" varchar(50),
-  "username" varchar(12),
-  "password" varchar(20)
+CREATE TABLE "accounts" (
+  "id" bigserial PRIMARY KEY,
+  "owner" varchar NOT NULL,
+  "balance" bigint NOT NULL,
+  "currency" varchar NOT NULL,
+  "created_at" timestamp NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "UserDetails" (
-  "id" serial PRIMARY KEY,
-  "user_id" integer,
-  "fullname" varchar(50),
-  "phone" varchar(13),
-  "gender" varchar(20)
+CREATE TABLE "entries" (
+  "id" bigserial PRIMARY KEY,
+  "account_id" bigint NOT NULL,
+  "amount" bigint NOT NULL,
+  "created_at" timestamp NOT NULL DEFAULT (now())
 );
 
-ALTER TABLE "UserDetails" ADD FOREIGN KEY ("user_id") REFERENCES "Users" ("id");
+CREATE TABLE "transfers" (
+  "id" bigserial PRIMARY KEY,
+  "from_account_id" bigint NOT NULL,
+  "to_account_id" bigint NOT NULL,
+  "amount" bigint NOT NULL,
+  "created_at" timestamp NOT NULL DEFAULT (now())
+);
+
+CREATE INDEX ON "accounts" ("owner");
+
+CREATE INDEX ON "entries" ("account_id");
+
+CREATE INDEX ON "transfers" ("from_account_id");
+
+CREATE INDEX ON "transfers" ("to_account_id");
+
+CREATE INDEX ON "transfers" ("from_account_id", "to_account_id");
+
+ALTER TABLE "entries" ADD FOREIGN KEY ("account_id") REFERENCES "accounts" ("id");
+
+ALTER TABLE "transfers" ADD FOREIGN KEY ("from_account_id") REFERENCES "accounts" ("id");
+
+ALTER TABLE "transfers" ADD FOREIGN KEY ("to_account_id") REFERENCES "accounts" ("id");
+

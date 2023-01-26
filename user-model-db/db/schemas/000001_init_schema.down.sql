@@ -1,2 +1,3 @@
-DROP TABLE IF EXISTS "UserDetails";
-DROP TABLE IF EXISTS "Users"
+DROP TABLE "transfers";
+DROP TABLE "entries";
+DROP TABLE "accounts" CASCADE;

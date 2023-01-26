@@ -1,4 +1,4 @@
-module user-model-db/app
+module user-model-db
 
 go 1.19
 
