@@ -59,7 +59,7 @@ type TransferTXParams struct {
 
 // TransferTXResult is the results of the transfer transaction
 type TransferTXResult struct {
-	Transfer   Transfers `json:"transfer"`
+	Transfer    Transfers `json:"transfer"`
 	FromAccount Accounts  `json:"from_account"`
 	ToAccount   Accounts  `json:"to_account"`
 	FromEntry   Entries   `json:"from_entry"`
@@ -74,40 +74,56 @@ and update the account balance within a single database transaction
 3. Update Account Balance
 */
 func (store *Store) TransferTX(ctx context.Context, arg TransferTXParams) (TransferTXResult, error) {
-	var results TransferTXResult
+	var result TransferTXResult
 	err := store.execTx(ctx, func(q *Queries) error {
-    var err error
-    
-    // create Transfer information with the transaction amount 
-    results.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
-      FromAccountID: arg.FromAccountID,
-      ToAccountID: arg.ToAccountID, 
-      Amount: arg.Amount,
-    })
-    if err != nil { 
-      return err
-    }
+		var err error
 
-    // create the from entry which is out transaction
-    results.FromEntry, err = q.CreateEntries(ctx, CreateEntriesParams{
-      AccountID: arg.FromAccountID,
-      Amount: -arg.Amount,
-    })
-    if err != nil { 
-      return err
-    }
+		// create Transfer information with the transaction amount
+		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
+			FromAccountID: arg.FromAccountID,
+			ToAccountID:   arg.ToAccountID,
+			Amount:        arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
 
-    // create the into entry which is in transcaction 
-    results.ToEntry, err = q.CreateEntries(ctx, CreateEntriesParams{
-      AccountID: arg.ToAccountID,
-      Amount: arg.Amount,
-    })
-    if err != nil { 
-      return err
-    }
+		// create the from entry which is out transaction
+		result.FromEntry, err = q.CreateEntries(ctx, CreateEntriesParams{
+			AccountID: arg.FromAccountID,
+			Amount:    -arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
 
-    // !TODO Update Account balance
+		// create the into entry which is in transcaction
+		result.ToEntry, err = q.CreateEntries(ctx, CreateEntriesParams{
+			AccountID: arg.ToAccountID,
+			Amount:    arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+
+		// get account balance -> Update Account balance using the locking mechanism
+		result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+			ID:     arg.FromAccountID,
+			Amount: -arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+
+		result.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+			ID:     arg.ToAccountID,
+			Amount: arg.Amount,
+		})
+
+		if err != nil {
+			return err
+		}
 		return nil
 	})
-  return results, err;
+	return result, err
 }
