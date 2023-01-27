@@ -106,24 +106,47 @@ func (store *Store) TransferTX(ctx context.Context, arg TransferTXParams) (Trans
 			return err
 		}
 
-		// get account balance -> Update Account balance using the locking mechanism
-		result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			ID:     arg.FromAccountID,
-			Amount: -arg.Amount,
-		})
-		if err != nil {
-			return err
+		// Now here we can check the value of the accout id from the argument
+		// here we reorder the transaction to be consistent
+		if arg.FromAccountID < arg.ToAccountID {
+      // here is minus because the money is going out 
+      //from the first accout or the from account
+      result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountID, -arg.Amount, arg.ToAccountID, arg.Amount)
+		} else {
+      // here we reverse the ToAccount to be transfering into the From account
+      result.ToAccount, result.FromAccount, err = addMoney(ctx, q, arg.ToAccountID, arg.Amount, arg.FromAccountID, -arg.Amount)
 		}
 
-		result.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			ID:     arg.ToAccountID,
-			Amount: arg.Amount,
-		})
-
-		if err != nil {
-			return err
-		}
 		return nil
 	})
 	return result, err
+}
+
+/* 
+* function addMoney is transfering the money from account1 to account2 
+* also the reverse order
+* taking parameteres of context, queries, from account and to account 
+* with the amount they are carrying
+*/ 
+func addMoney(
+	ctx context.Context,
+	q *Queries,
+	account1ID int64,
+	amount1 int64,
+	account2ID int64,
+	amount2 int64,
+) (account1 Accounts, account2 Accounts, err error) {
+	account1, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+		ID:     account1ID,
+		Amount: amount1,
+	})
+	if err != nil {
+		return
+	}
+
+	account2, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+		ID:     account2ID,
+		Amount: amount2,
+	})
+	return
 }

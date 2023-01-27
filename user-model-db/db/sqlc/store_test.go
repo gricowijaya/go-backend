@@ -15,7 +15,7 @@ func TestTransferTx(t *testing.T) {
 	fmt.Println("Before >>", account1.Balance, account2.Balance)
 
 	// run a concurrent goroutine
-	n := 5 
+	n := 5
 	amount := int64(10)
 	// send the channel into errors
 	errs := make(chan error)
@@ -25,7 +25,7 @@ func TestTransferTx(t *testing.T) {
 	for i := 0; i < n; i++ {
 		go func() {
 			// this function return a result or an error
-      ctx := context.Background()
+			ctx := context.Background()
 			result, err := store.TransferTX(ctx, TransferTXParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
@@ -112,4 +112,63 @@ func TestTransferTx(t *testing.T) {
 
 	require.Equal(t, account1.Balance-int64(n)*amount, updatedAccount1.Balance)
 	require.Equal(t, account2.Balance+int64(n)*amount, updatedAccount2.Balance)
+}
+
+func TestTransferTxDeadlock(t *testing.T) {
+	store := NewStore(testDB)
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
+	fmt.Println("Before >>", account1.Balance, account2.Balance)
+
+	// run 5 transaction from account1 to account2 and 5 reverse transasction from account1
+	n := 10
+	amount := int64(10)
+	// send the channel into errors
+	errs := make(chan error)
+	// send the results into results
+	for i := 0; i < n; i++ {
+		fromAccountID := account1.ID
+		toAccountID := account2.ID
+
+		// check if i is odd number or not, 
+    // if it is then we change the fromAccountID value with the account2
+    // this checks the reveresed transaction
+		if i%2 == 1 {
+			fromAccountID = account2.ID
+			toAccountID = account1.ID
+		}
+
+		go func() {
+			// this function return a result or an error
+			_, err := store.TransferTX(context.Background(), TransferTXParams{
+				FromAccountID: fromAccountID,
+				ToAccountID:   toAccountID,
+				Amount:        amount,
+			})
+			// send data into error
+			errs <- err
+		}()
+	}
+
+	// check the results
+	for i := 0; i < n; i++ {
+		// error from the channel
+		err := <-errs
+		require.NoError(t, err)
+	}
+
+	// check the update balances
+	updatedAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
+	require.NoError(t, err)
+
+	updatedAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
+	require.NoError(t, err)
+	fmt.Println("After >>", updatedAccount1.Balance, updatedAccount2.Balance)
+
+
+  // update the balance into accountx.Balance only because we will perform 
+  // 10 transactions from account 1 and account 2, 
+  // the results of the balance should be the same as we start
+	require.Equal(t, account1.Balance, updatedAccount1.Balance)
+	require.Equal(t, account2.Balance, updatedAccount2.Balance)
 }
